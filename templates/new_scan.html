@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}New Scan — VulnScope{% endblock %}
+{% block page_title %}New Scan{% endblock %}
+{% block breadcrumb %}/ Scans / New{% endblock %}
+
+{% block content %}
+<div class="center-card">
+  <h2 style="font-size: 20px; margin-bottom: 30px; justify-content: center;">Start Assessment</h2>
+  
+  <form method="post" action="{{ url_for('scans.start_scan') }}" id="scanForm">
+    <div class="form-group">
+      <label>Scan Name (optional)</label>
+      <input type="text" name="name" placeholder="e.g. Quarterly review">
+    </div>
+    
+    <div class="form-group">
+      <label>Target URL *</label>
+      <input type="url" name="target_url" id="targetUrl" required placeholder="https://example.com" pattern="https?://.+">
+    </div>
+    
+    <div class="form-group">
+      <label>Scan Profile</label>
+      <select name="profile">
+        <option value="passive">Passive — observation only (headers, cookies, TLS)</option>
+        <option value="standard">Standard — passive + public resource checks</option>
+        <option value="active">Active — aggressive checks (SQLi, XSS) - Authorized targets only</option>
+      </select>
+    </div>
+    
+    <div class="form-group checkbox-row">
+      <input type="checkbox" name="authorized" required id="auth">
+      <label for="auth">I confirm that I own or have written authorization to assess this website. Active checks must only be run against authorized targets.</label>
+    </div>
+    
+    <div style="display: flex; justify-content: center; margin-top: 30px;">
+      <button class="btn" type="submit" id="submitBtn" style="width: 60%;">
+        ▶ Start Scan
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.getElementById('scanForm').addEventListener('submit', function(e) {
+    var btn = document.getElementById('submitBtn');
+    btn.innerHTML = '<span class="spinner"></span> Scanning...';
+    btn.style.opacity = '0.7';
+    btn.style.cursor = 'not-allowed';
+    btn.disabled = true;
+  });
+</script>
+<style>
+  .spinner {
+    display: inline-block; width: 16px; height: 16px;
+    border: 2px solid rgba(0,0,0,0.3); border-radius: 50%;
+    border-top-color: #000; animation: spin 1s ease-in-out infinite;
+    margin-right: 8px; vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+{% endblock %}

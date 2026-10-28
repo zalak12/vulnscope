@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Settings — VulnScope{% endblock %}
+{% block page_title %}Settings{% endblock %}
+{% block breadcrumb %}/ Settings{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:720px">
+  <h2>Application Information</h2>
+  <dl class="kv">
+    <dt>Version</dt><dd>1.0.0</dd>
+    <dt>Scanner Engine</dt><dd>VulnScope Passive/Standard</dd>
+    <dt>Database</dt><dd>SQLite (local)</dd>
+    <dt>Report Formats</dt><dd>JSON, HTML</dd>
+  </dl>
+  <p style="color:var(--text-500); margin-top:16px">
+    Authentication and multi-user management are intentionally not enabled in this MVP build.
+    Only run scans against targets you own or have written authorization to assess.
+  </p>
+</div>
+{% endblock %}

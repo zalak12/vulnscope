@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Error — VulnScope{% endblock %}
+{% block page_title %}System Error{% endblock %}
+
+{% block content %}
+<div class="center-card" style="text-align:center; margin-top: 10vh;">
+  <h1 style="font-size: 80px; color: var(--danger); text-shadow: 0 0 20px rgba(239,68,68,0.5); margin-bottom: 0;">{{ code }}</h1>
+  <h2 style="font-size: 24px; margin-bottom: 20px;">{{ message }}</h2>
+  <p style="color: var(--text-500); margin-bottom: 30px;">The requested URL was not found or an internal error occurred.</p>
+  <a href="{{ url_for('dashboard.overview') }}" class="btn">← Return to Dashboard</a>
+</div>
+{% endblock %}

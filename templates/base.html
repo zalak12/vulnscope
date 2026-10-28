@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}VulnScope{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+{% set ep = request.endpoint or '' %}
+<div class="layout">
+
+  <aside class="sidebar" id="sidebar">
+    <!-- Added link to return to landing page -->
+    <a href="{{ url_for('landing') }}" class="brand" style="text-decoration: none;">
+      <div class="logo">V</div>
+      <div>
+        <div class="name">VulnScope</div>
+        <div class="sub">Security Intel</div>
+      </div>
+    </a>
+
+    <nav class="nav">
+      <a href="{{ url_for('dashboard.overview') }}"
+         class="{{ 'active' if ep == 'dashboard.overview' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="9"></rect>
+          <rect x="14" y="3" width="7" height="5"></rect>
+          <rect x="14" y="12" width="7" height="9"></rect>
+          <rect x="3" y="16" width="7" height="5"></rect>
+        </svg>
+        Overview
+      </a>
+
+      <a href="{{ url_for('scans.new_scan') }}"
+         class="{{ 'active' if ep == 'scans.new_scan' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        New Scan
+      </a>
+
+      <a href="{{ url_for('scans.history') }}"
+         class="{{ 'active' if ep == 'scans.history' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="9"></circle>
+          <polyline points="12 7 12 12 15 14"></polyline>
+        </svg>
+        Scan History
+      </a>
+
+      <a href="{{ url_for('findings.list_findings') }}"
+         class="{{ 'active' if ep == 'findings.list_findings' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="7"></circle>
+          <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+        </svg>
+        Findings
+      </a>
+
+      <a href="{{ url_for('reports.index') }}"
+         class="{{ 'active' if ep == 'reports.index' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+        </svg>
+        Reports
+      </a>
+
+      <a href="{{ url_for('settings') }}"
+         class="{{ 'active' if ep == 'settings' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        Settings
+      </a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="menu-toggle" type="button" aria-label="Toggle navigation">☰</button>
+      <h1>{% block page_title %}Overview{% endblock %}</h1>
+      <span class="bread">{% block breadcrumb %}{% endblock %}</span>
+      <div class="status"><span class="dot"></span> System Online</div>
+    </header>
+
+    <main class="content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for cat, msg in messages %}
+            <div class="card flash-message {{ 'flash-error' if cat == 'error' else 'flash-success' }}">
+              {{ msg }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

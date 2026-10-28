@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>VulnScope — Web Vulnerability Assessment</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    /* Landing page specific styling */
+    body { overflow-x: hidden; background-color: var(--bg-900); }
+    
+    /* Hero Section */
+    .hero {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; text-align: center; padding: 40px 20px;
+      position: relative;
+    }
+    
+    /* Glowing Background Orbs */
+    .orb {
+      position: absolute; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.4;
+    }
+    .orb-pink { width: 400px; height: 400px; background: var(--accent-2); top: 10%; left: -10%; }
+    .orb-blue { width: 500px; height: 500px; background: var(--accent); bottom: -10%; right: -10%; }
+
+    .hero h1 {
+      font-size: 56px; font-weight: 800; line-height: 1.1; margin-bottom: 20px;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(90deg, #fff, var(--text-500));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero h1 span {
+      background: linear-gradient(90deg, var(--accent-2), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    
+    .hero p {
+      font-size: 18px; color: var(--text-300); max-width: 700px; line-height: 1.6; margin-bottom: 40px;
+    }
+
+    .hero .btn { font-size: 16px; padding: 16px 40px; border-radius: 30px; }
+    
+    /* Features Section */
+    .features {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px; max-width: 1200px; margin: 0 auto; padding: 60px 20px;
+    }
+    
+    .feature-card {
+      background: rgba(19, 19, 34, 0.7);
+      border: 1px solid var(--border); border-radius: var(--radius); padding: 30px;
+      transition: 0.3s; backdrop-filter: blur(10px);
+    }
+    .feature-card:hover {
+      border-color: var(--accent); transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(6, 182, 212, 0.1);
+    }
+    .feature-card h3 { color: #fff; margin-bottom: 12px; font-family: 'Fira Code', monospace; font-size: 18px; }
+    .feature-card p { color: var(--text-500); font-size: 14px; line-height: 1.6; }
+
+    .footer { text-align: center; padding: 40px; color: var(--text-500); font-size: 12px; border-top: 1px solid var(--border); }
+  @media (max-width: 768px) {
+  .hero h1 { font-size: 36px !important; }
+  .hero p { font-size: 15px !important; }
+  .features { grid-template-columns: 1fr !important; }
+}  
+  </style>
+</head>
+<body>
+
+  <div class="hero">
+    <div class="orb orb-pink"></div>
+    <div class="orb orb-blue"></div>
+    
+    <div class="brand" style="margin-bottom: 40px; padding: 0; border: none;">
+      <div class="logo" style="width: 50px; height: 50px; font-size: 26px;">V</div>
+      <div style="text-align: left;">
+        <div class="name" style="font-size: 24px;">VulnScope</div>
+        <div class="sub" style="font-size: 12px;">Security Intel</div>
+      </div>
+    </div>
+
+    <h1>Web Vulnerability <br> <span>Assessment Platform</span></h1>
+    <p>Identify security weaknesses, missing headers, and certificate issues in web applications. Analyze targets securely and generate professional security reports instantly.</p>
+    
+    <!-- Button to enter dashboard -->
+    <a href="{{ url_for('dashboard.overview') }}" class="btn">Enter Dashboard →</a>
+  </div>
+
+  <div class="features">
+    <div class="feature-card">
+      <h3>🛡️ Real Security Checks</h3>
+      <p>Performs actual passive and standard non-destructive checks including TLS certificates, missing security headers, and cookie flags.</p>
+    </div>
+    <div class="feature-card">
+      <h3>⚡ Instant Reports</h3>
+      <p>Generate downloadable JSON and print-friendly HTML reports containing detailed evidence, explanations, and remediations.</p>
+    </div>
+    <div class="feature-card">
+      <h3>📊 Analytics Dashboard</h3>
+      <p>Track your scan history, monitor severity distribution, and view the overall security posture of your audited targets.</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    VulnScope &copy; 2026 — For Educational & Authorized Security Testing Only.
+  </div>
+
+</body>
+</html>

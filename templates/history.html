@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}History — VulnScope{% endblock %}
+{% block page_title %}Scan History{% endblock %}
+{% block breadcrumb %}/ Scans{% endblock %}
+
+{% block content %}
+<div class="card">
+  <form method="get" style="display:flex; gap:8px; margin-bottom:16px">
+    <input type="text" name="q" value="{{ q }}" placeholder="Search by target...">
+    <button class="btn" type="submit">Search</button>
+  </form>
+
+  {% if scans %}
+  <table>
+    <thead>
+      <tr>
+        <th>Target</th>
+        <th>Date</th>
+        <th>Status</th>
+        <th>Findings</th>
+        <th>Highest Severity</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in scans %}
+      <tr>
+        <td>{{ s.target_url[:50] }}</td>
+        <td>{{ s.started_at.strftime('%Y-%m-%d %H:%M') if s.started_at }}</td>
+        <td><span class="badge {{ s.status }}">{{ s.status }}</span></td>
+        <td>{{ s.finding_count }}</td>
+        <td>
+          {% if s.highest_severity %}
+            <span class="badge {{ s.highest_severity }}">{{ s.highest_severity }}</span>
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          <a href="{{ url_for('scans.results', scan_id=s.scan_id) }}" style="margin-right: 12px;">View →</a>
+          
+          <!-- DELETE BUTTON -->
+          <form method="POST" action="{{ url_for('scans.delete_scan', scan_id=s.scan_id) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this scan?');">
+            <button type="submit" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:13px; padding:0;">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty"><h3>No scans found</h3><p>Start a new assessment to populate history.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

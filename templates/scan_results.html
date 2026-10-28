@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Scan {{ scan.scan_id }} — VulnScope{% endblock %}
+{% block page_title %}Scan Results{% endblock %}
+{% block breadcrumb %}/ Scans / {{ scan.scan_id }}{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom:24px">
+  <h2>Scan Metadata</h2>
+  <dl class="kv">
+    <!-- NAYA: Security Risk Score -->
+    <dt>Security Risk Score</dt>
+    <dd>
+      <strong style="font-size: 20px; color: {% if scan.risk_score > 70 %}var(--success){% elif scan.risk_score > 40 %}var(--warning){% else %}var(--danger){% endif %};">
+        {{ scan.risk_score }}/100
+      </strong>
+    </dd>
+    
+    <dt>Scan ID</dt><dd>{{ scan.scan_id }}</dd>
+    <dt>Target URL</dt><dd>{{ scan.target_url }}</dd>
+    <dt>Final URL</dt><dd>{{ scan.final_url or '—' }}</dd>
+    <dt>Profile</dt><dd>{{ scan.profile }}</dd>
+    <dt>Status</dt><dd><span class="badge {{ scan.status }}">{{ scan.status }}</span></dd>
+    <dt>HTTP Status</dt><dd>{{ scan.http_status or '—' }}</dd>
+    <dt>Response Time</dt><dd>{{ scan.response_time_ms }} ms</dd>
+    <dt>Started</dt><dd>{{ scan.started_at }}</dd>
+    <dt>Completed</dt><dd>{{ scan.completed_at or '—' }}</dd>
+    {% if scan.error_message %}
+    <dt>Error</dt><dd style="color:var(--danger)">{{ scan.error_message }}</dd>
+    {% endif %}
+  </dl>
+  
+  <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:20px;">
+    <a class="btn" href="{{ url_for('reports.download_html', scan_id=scan.scan_id) }}">⬇ HTML Report</a>
+    <a class="btn secondary" href="{{ url_for('reports.download_json', scan_id=scan.scan_id) }}">⬇ JSON Data</a>
+    <button class="btn secondary" onclick="window.open('{{ url_for('reports.download_html', scan_id=scan.scan_id) }}', '_blank').print();">
+      🖨️ Print / Save PDF
+    </button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Findings ({{ scan.findings|length }})</h2>
+  {% if scan.findings %}
+  <table>
+    <thead>
+      <tr><th>Severity</th><th>Title</th><th>Check</th><th>Confidence</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for f in scan.findings %}
+      <tr>
+        <td><span class="badge {{ f.severity }}">{{ f.severity }}</span></td>
+        <td>{{ f.title }}</td>
+        <td>{{ f.check_name }}</td>
+        <td>{{ f.confidence }}</td>
+        <td><a href="{{ url_for('findings.detail', finding_id=f.finding_id) }}">Details & Fix →</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty"><h3>No findings recorded</h3><p>The target responded, but no issues were detected in the checks performed.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

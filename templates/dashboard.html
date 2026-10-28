@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% block title %}Overview — VulnScope{% endblock %}
+{% block page_title %}Overview{% endblock %}
+{% block breadcrumb %}/ Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="grid-stats">
+  <div class="card stat">
+    <div class="label">Total Scans</div>
+    <div class="value">{{ total_scans }}</div>
+  </div>
+  <div class="card stat ok">
+    <div class="label">Completed</div>
+    <div class="value">{{ completed }}</div>
+  </div>
+  <div class="card stat">
+    <div class="label">Sites with Findings</div>
+    <div class="value">{{ sites_with_findings }}</div>
+  </div>
+  <div class="card stat high">
+    <div class="label">High-Severity Findings</div>
+    <div class="value">{{ high_sev }}</div>
+  </div>
+  <!-- NAYA: Risk Score Card -->
+  <div class="card stat">
+    <div class="label">Last Scan Risk Score</div>
+    <div class="value" style="color: {% if recent and recent[0].risk_score > 70 %}var(--success){% elif recent and recent[0].risk_score > 40 %}var(--warning){% else %}var(--danger){% endif %};">
+      {{ recent[0].risk_score if recent else 'N/A' }}<span style="font-size: 16px; color: var(--text-500);">/100</span>
+    </div>
+  </div>
+</div>
+
+<!-- Scan Trend Line Chart -->
+<div class="card" style="margin-bottom: 24px;">
+  <h2>Scan Activity (Last 7 Days)</h2>
+  <canvas id="trendChart" height="80"></canvas>
+</div>
+
+<div style="display:grid; grid-template-columns: 2fr 1fr; gap:16px; margin-bottom:24px;">
+
+  <div class="card">
+    <h2>Recent Scans</h2>
+    {% if recent %}
+      <table>
+        <thead>
+          <tr>
+            <th>Target</th>
+            <th>Status</th>
+            <th>Findings</th>
+            <th>Score</th>
+            <th>Started</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in recent %}
+          <tr>
+            <td>{{ s.target_url[:60] }}</td>
+            <td><span class="badge {{ s.status }}">{{ s.status }}</span></td>
+            <td>{{ s.finding_count }}</td>
+            <td>
+              {% if s.status == 'completed' %}
+                <span style="font-weight:bold; color: {% if s.risk_score > 70 %}var(--success){% elif s.risk_score > 40 %}var(--warning){% else %}var(--danger){% endif %};">
+                  {{ s.risk_score }}
+                </span>
+              {% else %}—{% endif %}
+            </td>
+            <td>{{ s.started_at.strftime('%Y-%m-%d %H:%M') if s.started_at else '—' }}</td>
+            <td><a href="{{ url_for('scans.results', scan_id=s.scan_id) }}">View →</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty">
+        <h3>No scans yet</h3>
+        <p>Run your first assessment to see results here.</p>
+        <a class="btn" href="{{ url_for('scans.new_scan') }}">Start New Scan</a>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h2>Severity Distribution</h2>
+    {% if severity_counts %}
+      <canvas id="sevChart" height="180"></canvas>
+    {% else %}
+      <div class="empty"><p>No findings recorded yet.</p></div>
+    {% endif %}
+  </div>
+
+</div>
+
+<div style="text-align:right">
+  <a class="btn" href="{{ url_for('scans.new_scan') }}">＋ New Scan</a>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<!-- Hidden data container -->
+<div id="chart-data" 
+     data-sev-labels="{{ severity_counts.keys() | list | tojson | forceescape }}" 
+     data-sev-values="{{ severity_counts.values() | list | tojson | forceescape }}"
+     data-trend-labels="{{ trend_labels | tojson | forceescape }}"
+     data-trend-values="{{ trend_data | tojson | forceescape }}"
+     style="display:none;"></div>
+
+<script>
+(function () {
+  var sevCtx = document.getElementById('sevChart');
+  var dataEl = document.getElementById('chart-data');
+  
+  if (sevCtx && dataEl) {
+    var sevLabels = JSON.parse(dataEl.dataset.sevLabels || '[]');
+    var sevValues = JSON.parse(dataEl.dataset.sevValues || '[]');
+    
+    var colorMap = {
+      critical: '#ef4444', high: '#f97316', medium: '#f59e0b', low: '#3b82f6', informational: '#64748b'
+    };
+    var colors = sevLabels.map(function (k) { return colorMap[k] || '#64748b'; });
+
+    new Chart(sevCtx, {
+      type: 'doughnut',
+      data: {
+        labels: sevLabels,
+        datasets: [{ data: sevValues, backgroundColor: colors, borderColor: '#0c1120', borderWidth: 3 }]
+      },
+      options: { responsive: true, plugins: { legend: { labels: { color: '#cbd5e1' } } } }
+    });
+  }
+
+  var trendCtx = document.getElementById('trendChart');
+  if (trendCtx && dataEl) {
+    var trendLabels = JSON.parse(dataEl.dataset.trendLabels || '[]');
+    var trendValues = JSON.parse(dataEl.dataset.trendValues || '[]');
+    
+    new Chart(trendCtx, {
+      type: 'line',
+      data: {
+        labels: trendLabels,
+        datasets: [{
+          label: 'Scans Performed',
+          data: trendValues,
+          borderColor: '#ec4899',
+          backgroundColor: 'rgba(236, 72, 153, 0.1)',
+          tension: 0.4, fill: true,
+          pointBackgroundColor: '#06b6d4', pointBorderColor: '#fff', pointRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, plugins: { legend: { labels: { color: '#cbd5e1' } } },
+        scales: {
+          y: { beginAtZero: true, ticks: { color: '#9ca3af', stepSize: 1 }, grid: { color: 'rgba(236, 72, 153, 0.1)' } },
+          x: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(236, 72, 153, 0.1)' } }
+        }
+      }
+    });
+  }
+})();
+</script>
+{% endblock %}

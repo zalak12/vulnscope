@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Finding — VulnScope{% endblock %}
+{% block page_title %}Finding Details{% endblock %}
+{% block breadcrumb %}/ Findings / {{ finding.finding_id }}{% endblock %}
+
+{% block content %}
+<div class="card finding-detail" style="max-width: 900px; margin: 0 auto;">
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px">
+    <span class="badge {{ finding.severity }}">{{ finding.severity }}</span>
+    <span class="badge">{{ finding.confidence }} confidence</span>
+  </div>
+  <h1 style="font-size: 26px; margin-bottom: 24px; color: #fff;">{{ finding.title }}</h1>
+  
+  <dl class="kv">
+    <dt>Finding ID</dt><dd>{{ finding.finding_id }}</dd>
+    <dt>Scan</dt><dd><a href="{{ url_for('scans.results', scan_id=finding.scan.scan_id) }}">{{ finding.scan.scan_id }}</a></dd>
+    <dt>Check</dt><dd>{{ finding.check_name }}</dd>
+    <dt>Affected URL</dt><dd><a href="{{ finding.affected_url }}" target="_blank">{{ finding.affected_url }}</a></dd>
+    <dt>Detected</dt><dd>{{ finding.detection_time.strftime('%Y-%m-%d %H:%M') if finding.detection_time }}</dd>
+  </dl>
+
+  <h2 style="margin-top:32px; font-size: 16px; color: var(--accent);">🔍 Evidence</h2>
+  <pre class="evidence">{{ finding.evidence }}</pre>
+
+  <h2 style="margin-top:32px; font-size: 16px; color: var(--accent-2);">⚠️ Explanation</h2>
+  <p style="color:var(--text-300); line-height: 1.6;">{{ finding.explanation }}</p>
+
+  <!-- NEW STEP-BY-STEP FIX SECTION -->
+  <div style="margin-top: 32px; background: rgba(6, 182, 212, 0.05); border: 1px solid var(--accent); border-radius: 8px; padding: 24px;">
+    <h2 style="margin-top:0; font-size: 16px; color: var(--success); display:flex; justify-content: space-between; align-items:center;">
+      <span>🛠️ How to Fix (Step-by-Step)</span>
+      <button onclick="copyFix()" class="btn secondary" style="padding: 6px 12px; font-size: 12px;">📋 Copy Code</button>
+    </h2>
+    <p style="color:var(--text-500); font-size: 13px; margin-bottom: 16px;">
+      Follow the instructions below to remediate this issue on your server or application code.
+    </p>
+    <pre id="fix-code" style="background: #000; border: 1px solid rgba(16, 185, 129, 0.3); border-left: 4px solid var(--success); border-radius: 6px; padding: 16px; font-family: 'Fira Code', monospace; font-size: 13px; overflow: auto; white-space: pre-wrap; color: #6ee7b7; margin: 0;">{{ finding.remediation }}</pre>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function copyFix() {
+    var code = document.getElementById('fix-code').innerText;
+    navigator.clipboard.writeText(code).then(function() {
+      var btn = event.target;
+      var original = btn.innerText;
+      btn.innerText = '✅ Copied!';
+      btn.style.borderColor = 'var(--success)';
+      btn.style.color = 'var(--success)';
+      setTimeout(function() {
+        btn.innerText = original;
+        btn.style.borderColor = '';
+        btn.style.color = '';
+      }, 2000);
+    });
+  }
+</script>
+{% endblock %}

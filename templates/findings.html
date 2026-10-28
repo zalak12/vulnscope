@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Findings — VulnScope{% endblock %}
+{% block page_title %}Findings{% endblock %}
+{% block breadcrumb %}/ Findings{% endblock %}
+
+{% block content %}
+<div class="card">
+  <form method="get" style="margin-bottom:16px">
+    <select name="severity" onchange="this.form.submit()">
+      <option value="">All severities</option>
+      {% for s in ['critical','high','medium','low','informational'] %}
+      <option value="{{ s }}" {{ 'selected' if sev==s }}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </form>
+
+  {% if findings %}
+  <table>
+    <thead><tr><th>Severity</th><th>Title</th><th>Check</th><th>Affected URL</th><th>Detected</th><th></th></tr></thead>
+    <tbody>
+      {% for f in findings %}
+      <tr>
+        <td><span class="badge {{ f.severity }}">{{ f.severity }}</span></td>
+        <td>{{ f.title }}</td>
+        <td>{{ f.check_name }}</td>
+        <td style="max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ f.affected_url }}</td>
+        <td>{{ f.detection_time.strftime('%Y-%m-%d %H:%M') if f.detection_time }}</td>
+        <td><a href="{{ url_for('findings.detail', finding_id=f.finding_id) }}">Details →</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty"><h3>No findings</h3><p>Run a scan to populate findings.</p></div>
+  {% endif %}
+</div>
+{% endblock %}
