@@ -7,7 +7,7 @@
 <div class="card" style="max-width: 800px; margin: 0 auto;">
   <h2>Domain Intelligence</h2>
   <p style="color: var(--text-500); margin-bottom: 20px;">
-    Enter a domain name to find its IP address, open ports, and known services (powered by Shodan).
+    Enter a domain name to find its IP address, geolocation, open ports, and known services (powered by public APIs).
   </p>
   
   <form method="POST" style="display: flex; gap: 10px; margin-bottom: 30px;">
@@ -22,6 +22,21 @@
     <dl class="kv" style="margin-top: 20px;">
       <dt>Resolved IP</dt>
       <dd><strong>{{ result.ip }}</strong></dd>
+
+      <!-- Naya: Reverse DNS -->
+      <dt>Reverse DNS</dt>
+      <dd>{{ result.reverse_dns or 'Not available' }}</dd>
+
+      <!-- Naya: IP Geolocation -->
+      <dt>IP Geolocation</dt>
+      <dd>
+        {% if result.geo %}
+          📍 {{ result.geo.city }}, {{ result.geo.country }} <br>
+          <span style="font-size: 12px; color: var(--text-500);">ISP: {{ result.geo.isp }}</span>
+        {% else %}
+          Not available
+        {% endif %}
+      </dd>
       
       <dt>Open Ports</dt>
       <dd>
