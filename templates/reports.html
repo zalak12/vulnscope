@@ -4,6 +4,78 @@
 {% block breadcrumb %}/ Reports{% endblock %}
 
 {% block content %}
+<!-- Custom CSS for Dropdown -->
+<style>
+  .dropdown-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .dropdown-btn {
+    background: rgba(19, 19, 34, 0.8);
+    color: var(--text-100);
+    border: 1px solid var(--border);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-family: 'Fira Code', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  
+  .dropdown-btn:hover {
+    border-color: var(--accent-2);
+    box-shadow: 0 0 10px rgba(236, 72, 153, 0.2);
+  }
+  
+  .dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    background: rgba(13, 13, 22, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    z-index: 100;
+    min-width: 180px;
+    overflow: hidden;
+  }
+  
+  .dropdown-menu.show {
+    display: block;
+    animation: fadeIn 0.15s ease-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    color: var(--text-300);
+    font-size: 13px;
+    text-decoration: none;
+    transition: background 0.2s;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  
+  .dropdown-item:last-child {
+    border-bottom: none;
+  }
+  
+  .dropdown-item:hover {
+    background: rgba(236, 72, 153, 0.1);
+    color: #fff;
+  }
+</style>
+
 <div class="card">
   <h2>Available Reports</h2>
   {% if scans %}
@@ -19,20 +91,24 @@
     <tbody>
       {% for s in scans %}
       <tr>
-        <td>{{ s.scan_id }}</td>
-        <td>{{ s.target_url[:60] }}</td>
+        <td style="font-family: 'Fira Code', monospace;">{{ s.scan_id }}</td>
+        <td>{{ s.target_url[:50] }}</td>
         <td>{{ s.completed_at.strftime('%Y-%m-%d %H:%M') if s.completed_at }}</td>
         <td>
-          <!-- Dropdown Container -->
-          <div style="position: relative; display: inline-block;">
-            <button class="btn secondary" onclick="toggleDropdown('{{ s.scan_id }}')" style="padding: 6px 12px; font-size: 12px;">
+          <div class="dropdown-wrapper">
+            <button class="dropdown-btn" onclick="toggleDropdown('{{ s.scan_id }}', event)">
               Download ▾
             </button>
-            <!-- Dropdown Menu -->
-            <div id="dropdown-{{ s.scan_id }}" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 4px; background: var(--bg-800); border: 1px solid var(--border); border-radius: 6px; box-shadow: var(--shadow); z-index: 10; min-width: 140px;">
-              <a href="{{ url_for('reports.download_json', scan_id=s.scan_id) }}" style="display: block; padding: 8px 12px; color: var(--text-300); font-size: 13px; text-decoration: none; border-bottom: 1px solid var(--border);">📄 Download JSON</a>
-              <a href="{{ url_for('reports.download_html', scan_id=s.scan_id) }}" style="display: block; padding: 8px 12px; color: var(--text-300); font-size: 13px; text-decoration: none; border-bottom: 1px solid var(--border);">🌐 View HTML</a>
-              <a href="#" onclick="window.open('{{ url_for('reports.download_html', scan_id=s.scan_id) }}', '_blank').print(); return false;" style="display: block; padding: 8px 12px; color: var(--text-300); font-size: 13px; text-decoration: none;">🖨️ Print / Save PDF</a>
+            <div id="dropdown-{{ s.scan_id }}" class="dropdown-menu">
+              <a href="{{ url_for('reports.download_json', scan_id=s.scan_id) }}" class="dropdown-item">
+                <span>📄</span> Download JSON
+              </a>
+              <a href="{{ url_for('reports.download_html', scan_id=s.scan_id) }}" class="dropdown-item">
+                <span>🌐</span> View HTML
+              </a>
+              <a href="#" onclick="window.open('{{ url_for('reports.download_html', scan_id=s.scan_id) }}', '_blank').print(); return false;" class="dropdown-item">
+                <span>🖨️</span> Print / Save PDF
+              </a>
             </div>
           </div>
         </td>
@@ -46,21 +122,24 @@
 </div>
 
 <script>
-  function toggleDropdown(scanId) {
+  function toggleDropdown(scanId, event) {
+    event.stopPropagation(); // Event bubbling rokne ke liye
+    
     // Pehle saare dropdowns ko band karein
-    document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
-      if (el.id !== 'dropdown-' + scanId) el.style.display = 'none';
+    document.querySelectorAll('.dropdown-menu').forEach(el => {
+      if (el.id !== 'dropdown-' + scanId) el.classList.remove('show');
     });
+    
     // Current wale ko toggle karein
     var dropdown = document.getElementById('dropdown-' + scanId);
-    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+    dropdown.classList.toggle('show');
   }
 
   // Agar bahar click karein to dropdown band ho jaye
   window.onclick = function(event) {
-    if (!event.target.matches('button')) {
-      document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
-        el.style.display = 'none';
+    if (!event.target.matches('.dropdown-btn')) {
+      document.querySelectorAll('.dropdown-menu').forEach(el => {
+        el.classList.remove('show');
       });
     }
   }
