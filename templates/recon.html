@@ -16,18 +16,23 @@
   </form>
 
   {% if result %}
-  <div style="border-top: 1px solid var(--border); padding-top: 20px;">
+  <!-- Print Report Button -->
+  <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+    <button class="btn secondary" onclick="window.print()" style="padding: 8px 16px; font-size: 12px;">
+      🖨️ Print / Save PDF
+    </button>
+  </div>
+
+  <div style="border-top: 1px solid var(--border); padding-top: 20px;" id="printable-area">
     <h3 style="color: var(--accent);">Results for {{ result.domain }}</h3>
     
     <dl class="kv" style="margin-top: 20px;">
       <dt>Resolved IP</dt>
       <dd><strong>{{ result.ip }}</strong></dd>
 
-      <!-- Naya: Reverse DNS -->
       <dt>Reverse DNS</dt>
       <dd>{{ result.reverse_dns or 'Not available' }}</dd>
 
-      <!-- Naya: IP Geolocation -->
       <dt>IP Geolocation</dt>
       <dd>
         {% if result.geo %}
@@ -79,4 +84,34 @@
   </div>
   {% endif %}
 </div>
+
+<!-- CSS to hide buttons and sidebar when printing -->
+<style>
+  @media print {
+    .sidebar, .topbar, form, .btn, .menu-toggle {
+      display: none !important;
+    }
+    .layout {
+      display: block !important;
+    }
+    .content {
+      padding: 0 !important;
+      max-width: 100% !important;
+    }
+    .card {
+      border: none !important;
+      box-shadow: none !important;
+      background: transparent !important;
+      color: #000 !important;
+    }
+    .card h2, .card h3, .kv dt, .kv dd {
+      color: #000 !important;
+    }
+    .badge {
+      border: 1px solid #000 !important;
+      color: #000 !important;
+      background: transparent !important;
+    }
+  }
+</style>
 {% endblock %}

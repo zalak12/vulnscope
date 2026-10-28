@@ -4,29 +4,35 @@
 <meta charset="utf-8">
 <title>VulnScope Report — {{ data.scan_id }}</title>
 <style>
-  body { font-family: system-ui, sans-serif; background: #fff; color: #111; padding: 40px; max-width: 1000px; margin: auto; }
-  h1 { color: #0c1120; }
-  table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; }
+  body { font-family: 'Times New Roman', Times, serif; background: #fff; color: #111; padding: 40px; max-width: 1000px; margin: auto; line-height: 1.5; }
+  h1, h2, h3 { color: #0c1120; }
+  h1 { border-bottom: 2px solid #0c1120; padding-bottom: 10px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; font-family: Arial, sans-serif; }
   th { background: #0c1120; color: #fff; text-align: left; padding: 10px; }
   td { padding: 10px; border-bottom: 1px solid #ddd; vertical-align: top; }
-  .badge { padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+  .badge { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
   .critical { background: #fee2e2; color: #991b1b; }
   .high { background: #ffedd5; color: #9a3412; }
   .medium { background: #fef3c7; color: #92400e; }
   .low { background: #dbeafe; color: #1e40af; }
   .informational { background: #e2e8f0; color: #334155; }
-  .meta { display: grid; grid-template-columns: 180px 1fr; gap: 8px; margin: 20px 0; }
-  .meta dt { color: #666; font-size: 12px; text-transform: uppercase; }
-  @media print { body { padding: 20px; } }
+  .meta { display: grid; grid-template-columns: 180px 1fr; gap: 8px; margin: 20px 0; font-family: Arial, sans-serif; font-size: 14px; }
+  .meta dt { color: #666; font-weight: bold; }
+  .section { margin-top: 40px; page-break-inside: avoid; }
+  pre { background: #f5f5f5; padding: 10px; border-radius: 4px; font-size: 12px; overflow-x: auto; white-space: pre-wrap; }
+  @media print { 
+    body { padding: 0; } 
+    .no-print { display: none; }
+  }
 </style>
 </head>
 <body>
 <h1>VulnScope Security Report</h1>
-<p style="color:#666">Generated {{ data.completed_at or data.started_at }}</p>
+<p style="color:#666">Generated on {{ data.completed_at or data.started_at }}</p>
 
 <div class="meta">
   <dt>Scan ID</dt><dd>{{ data.scan_id }}</dd>
-  <dt>Target</dt><dd>{{ data.target_url }}</dd>
+  <dt>Target URL</dt><dd>{{ data.target_url }}</dd>
   <dt>Final URL</dt><dd>{{ data.final_url or '—' }}</dd>
   <dt>Profile</dt><dd>{{ data.profile }}</dd>
   <dt>Status</dt><dd>{{ data.status }}</dd>
@@ -34,28 +40,86 @@
   <dt>Response Time</dt><dd>{{ data.response_time_ms }} ms</dd>
 </div>
 
-<h2>Findings ({{ data.findings|length }})</h2>
-{% if data.findings %}
-<table>
-  <thead><tr><th>Severity</th><th>Title</th><th>Check</th><th>Confidence</th><th>Evidence</th><th>Remediation</th></tr></thead>
-  <tbody>
-    {% for f in data.findings %}
-    <tr>
-      <td><span class="badge {{ f.severity }}">{{ f.severity }}</span></td>
-      <td>{{ f.title }}</td>
-      <td>{{ f.check_name }}</td>
-      <td>{{ f.confidence }}</td>
-      <td>{{ f.evidence }}</td>
-      <td>{{ f.remediation }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-{% else %}
-<p>No findings recorded.</p>
+<!-- NAYA: Network Recon Section -->
+{% if recon and not recon.error %}
+<div class="section">
+  <h2>Network & Forensic Intelligence</h2>
+  <div class="meta">
+    <dt>Resolved IP</dt><dd>{{ recon.ip }}</dd>
+    <dt>Reverse DNS</dt><dd>{{ recon.reverse_dns or 'Not available' }}</dd>
+    <dt>Geolocation</dt>
+    <dd>
+      {% if recon.geo %}
+        {{ recon.geo.city }}, {{ recon.geo.country }} (ISP: {{ recon.geo.isp }})
+      {% else %}
+        Not available
+      {% endif %}
+    </dd>
+    <dt>Open Ports</dt>
+    <dd>
+      {% if recon.ports %}
+        {{ recon.ports|join(', ') }}
+      {% else %}
+        None found
+      {% endif %}
+    </dd>
+    <dt>Hostnames</dt><dd>{{ recon.hostnames|join(', ') if recon.hostnames else 'None' }}</dd>
+    <dt>Known CVEs</dt>
+    <dd>
+      {% if recon.vulns %}
+        {{ recon.vulns|join(', ') }}
+      {% else %}
+        None found
+      {% endif %}
+    </dd>
+  </div>
+</div>
 {% endif %}
 
-<p style="margin-top:40px; color:#999; font-size:12px">
+<div class="section">
+  <h2>Vulnerability Findings ({{ data.findings|length }})</h2>
+  {% if data.findings %}
+  <table>
+    <thead><tr><th>Severity</th><th>Title</th><th>Check</th><th>Confidence</th><th>Evidence & Remediation</th></tr></thead>
+    <tbody>
+      {% for f in data.findings %}
+      <tr>
+        <td><span class="badge {{ f.severity }}">{{ f.severity }}</span></td>
+        <td>{{ f.title }}</td>
+        <td>{{ f.check_name }}</td>
+        <td>{{ f.confidence }}</td>
+        <td>
+          <strong>Evidence:</strong> {{ f.evidence }}<br><br>
+          <strong>Remediation:</strong><br>
+          <pre>{{ f.remediation }}</pre>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No vulnerability findings recorded.</p>
+  {% endif %}
+</div>
+
+<!-- NAYA: Source Code / Metadata Section (Jo aapne maanga) -->
+<div class="section">
+  <h2>Technical Metadata & Source Reference</h2>
+  <p>This report was generated by the VulnScope Web Vulnerability & Forensic Intelligence engine.</p>
+  <pre>
+# Core Engine Modules
+- app.py (Flask Application Factory)
+- services/scanner.py (Passive & Active Scanning Logic)
+- services/checks.py (Header, Cookie, SQLi, XSS Detection)
+- services/recon.py (Shodan & IP-API Integration)
+- models.py (SQLite Database Schema)
+
+# Report ID: {{ data.scan_id }}
+# Generated via VulnScope Cloud (Render.com)
+  </pre>
+</div>
+
+<p style="margin-top:40px; color:#999; font-size:12px; text-align:center; border-top: 1px solid #eee; padding-top: 20px;">
   Report generated by VulnScope. Findings reflect only the checks performed during this assessment and may require manual verification.
 </p>
 </body>
