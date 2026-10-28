@@ -8,15 +8,34 @@
   <h2>Available Reports</h2>
   {% if scans %}
   <table>
-    <thead><tr><th>Scan ID</th><th>Target</th><th>Completed</th><th>JSON</th><th>HTML</th></tr></thead>
+    <thead>
+      <tr>
+        <th>Scan ID</th>
+        <th>Target</th>
+        <th>Completed</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
     <tbody>
       {% for s in scans %}
       <tr>
         <td>{{ s.scan_id }}</td>
         <td>{{ s.target_url[:60] }}</td>
         <td>{{ s.completed_at.strftime('%Y-%m-%d %H:%M') if s.completed_at }}</td>
-        <td><a href="{{ url_for('reports.download_json', scan_id=s.scan_id) }}">Download</a></td>
-        <td><a href="{{ url_for('reports.download_html', scan_id=s.scan_id) }}">View</a></td>
+        <td>
+          <!-- Dropdown Container -->
+          <div style="position: relative; display: inline-block;">
+            <button class="btn secondary" onclick="toggleDropdown('{{ s.scan_id }}')" style="padding: 6px 12px; font-size: 12px;">
+              Download ▾
+            </button>
+            <!-- Dropdown Menu -->
+            <div id="dropdown-{{ s.scan_id }}" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 4px; background: var(--bg-800); border: 1px solid var(--border); border-radius: 6px; box-shadow: var(--shadow); z-index: 10; min-width: 140px;">
+              <a href="{{ url_for('reports.download_json', scan_id=s.scan_id) }}" style="display: block; padding: 8px 12px; color: var(--text-300); font-size: 13px; text-decoration: none; border-bottom: 1px solid var(--border);">📄 Download JSON</a>
+              <a href="{{ url_for('reports.download_html', scan_id=s.scan_id) }}" style="display: block; padding: 8px 12px; color: var(--text-300); font-size: 13px; text-decoration: none; border-bottom: 1px solid var(--border);">🌐 View HTML</a>
+              <a href="#" onclick="window.open('{{ url_for('reports.download_html', scan_id=s.scan_id) }}', '_blank').print(); return false;" style="display: block; padding: 8px 12px; color: var(--text-300); font-size: 13px; text-decoration: none;">🖨️ Print / Save PDF</a>
+            </div>
+          </div>
+        </td>
       </tr>
       {% endfor %}
     </tbody>
@@ -25,4 +44,25 @@
   <div class="empty"><h3>No completed scans</h3><p>Complete a scan to generate reports.</p></div>
   {% endif %}
 </div>
+
+<script>
+  function toggleDropdown(scanId) {
+    // Pehle saare dropdowns ko band karein
+    document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
+      if (el.id !== 'dropdown-' + scanId) el.style.display = 'none';
+    });
+    // Current wale ko toggle karein
+    var dropdown = document.getElementById('dropdown-' + scanId);
+    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+  }
+
+  // Agar bahar click karein to dropdown band ho jaye
+  window.onclick = function(event) {
+    if (!event.target.matches('button')) {
+      document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
+        el.style.display = 'none';
+      });
+    }
+  }
+</script>
 {% endblock %}
