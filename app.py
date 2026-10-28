@@ -6,7 +6,7 @@ from blueprints.scans import bp as scans_bp
 from blueprints.findings import bp as findings_bp
 from blueprints.reports import bp as reports_bp
 from blueprints.api import bp as api_bp
-
+from blueprints.recon import bp as recon_bp
 
 def create_app():
     app = Flask(__name__)
@@ -18,6 +18,7 @@ def create_app():
     app.register_blueprint(findings_bp)
     app.register_blueprint(reports_bp)
     app.register_blueprint(api_bp, url_prefix='/api')
+    app.register_blueprint(recon_bp)
 
     # Landing Page Route (Root URL)
     @app.route('/')
